@@ -1,0 +1,23 @@
+{
+  "name": "facial_integrated_system_technology",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "run": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "canvas": "^3.1.0",
+    "express": "^4.21.2",
+    "express-useragent": "^1.0.15",
+    "face-api.js": "^0.20.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

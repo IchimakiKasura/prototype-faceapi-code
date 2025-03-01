@@ -1,0 +1,1 @@
+ffplay tcp://%~1 -vf "setpts=N/30" -fflags nobuffer -flags low_delay -framedrop

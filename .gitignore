@@ -1,0 +1,3 @@
+node_modules
+bin/database/users
+bin/database/data.js

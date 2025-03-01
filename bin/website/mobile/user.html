@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/socket.io.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRANTED ACCESS</title>
+    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+</head>
+<body>
+    <img id="ShareCam">
+    <script>
+        const socket = io();
+        const img = document.getElementById('ShareCam');
+
+        socket.on('stream', (imageData) => {
+            img.src = imageData;
+        })
+    </script>
+</body>
+</html>

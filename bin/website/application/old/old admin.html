@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Database file -->
+        <script src="data.js"></script>
+        <script src="/socket.io.js"></script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ADMIN ACCESS</title>
+        <link rel="stylesheet/less" type="text/css" href="styles.less">
+        <script src="less.js"></script>
+        <script src="face-api.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+        <script src="camera.js" defer></script>
+    </head>
+    <body>
+        <div class="main-window">
+            <div class="upper-section">
+                <div class="camera-placeholder">
+                    <video id="cam" height="560" width="750" autoplay muted></video>
+                </div>
+                <div class="info-placeholder">
+                    <div class="info">
+                        <div style="text-align: center;">
+                            <!-- <img src="../../database/users/test/test.png" alt="Image Placeholder"> -->
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/800px-User_icon_2.svg.png" height="250" width="250" alt="Image Placeholder">
+                        </div>
+                        <p>Name: <span id="name_slot">N/A</span></p>
+                        <p>Grade and Section: <span id="grade_section_slot">N/A</span></p>
+                        <p>Student ID: <span id="student_id_slot">N/A</span></p>
+                        <p>Time of Entry: <span id="toe_slot">N/A</span></p>
+                    </div>
+                    <div class="history">
+                        <div class="student_history">
+                            <p>name</p>
+                            <div class="violation_btn">
+                                <button>FAKE</button>
+                                <button>UNIFORM</button>
+                                <button>HAIRCUT</button>
+                                <button>LATE</button>
+                            </div>
+                        </div>
+                        <div class="student_history">
+                            <p>name</p>
+                            <div class="violation_btn">
+                                <button>FAKE</button>
+                                <button>UNIFORM</button>
+                                <button>HAIRCUT</button>
+                                <button>LATE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

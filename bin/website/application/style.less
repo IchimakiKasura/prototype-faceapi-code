@@ -1,0 +1,153 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    display: flex;
+    background-color: #99D9EA;
+}
+
+canvas {
+    position: absolute;
+    top: 50%;
+    width: 580px;
+    transform: translateY(-50%);
+    opacity: 0.3;
+    // background-color: rgba(255, 0, 0, 0.5);
+    // pointer-events: none;
+}
+
+.webcam {
+    background-color: black;
+    height: 100vh;
+    width: 850px;
+    box-shadow: 0 0 20px 5px black;
+
+    #cam {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        // mirrors the camera
+        // transform: rotateY(180deg);
+    }
+}
+
+.info {
+    font-family: tahoma;
+    color: white;
+    position: relative;
+    background-color: rgba(0,0,0,0.5);
+    height: auto;
+    width: 100%;
+    margin: 20px;
+    padding: 10px;
+    border-radius: 10px;
+
+    .student_info {
+        
+        #studentPicture {
+            position: absolute;
+            background-color: white;
+            margin: 0px 0 0 20px;
+            height: 229px;
+            border-radius: 5px;
+        }
+        
+
+        .data_info {
+            margin: 20px 20px 0 260px;
+            background-color: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 5px;
+
+            p {
+                background-color: rgba(0,0,0,0.5);
+                margin: 5px;
+                padding: 11px;
+                border-radius: 2.5px;
+            }
+        }
+    }
+
+    .misc_placeholder {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+
+        .title {
+            text-align: center;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .studentHistory, .buttons {
+            background-color: rgba(0,0,0,0.5);
+            width: 100%;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .studentHistory {
+            height: 63vh;
+            .scrollList {
+                height: 90%;
+                overflow: scroll;
+    
+                .student {
+                    img {
+                        border-radius: 2px;
+                    }
+    
+                    p {
+                        margin-left: 20px;
+                        align-self: center;
+                    }
+    
+                    display: flex;
+                    padding: 5px;
+                    margin: 5px;
+                    border-radius: 5px;
+    
+                    background-color: rgba(0, 0, 0, 0.5);
+                }
+    
+                .student:hover {
+                    background-color: rgba(0, 0, 0, 0.9);
+                }
+            }
+
+            .scrollList::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        .buttons {
+            width: 40% !important;
+
+            .click {
+                text-align: center;
+                font-size: 50px;
+
+                .btn {
+                    background-color: rgba(0, 0, 0, 0.5);
+                    border-radius: 2.5px;
+                    padding: 20px;
+                    margin: 10px;
+                    cursor: pointer;
+                    user-select: none;
+                }
+
+                .btn:hover {
+                    background-color: rgba(0, 0, 0, 0.9);
+                }
+            }
+        }
+
+    }
+}

@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs')
 const useragent = require('express-useragent');
 
 const app = express();
@@ -10,7 +11,9 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = 8080;
 
-app.use(useragent.express());
+// Login credentials for security? idk
+const credentials = JSON.parse(fs.readFileSync('./bin/database/credentials.json', 'utf-8'));
+const { admin, user } = credentials;
 
 const setMimeType = (res, filePath) => {
     const types = { js: 'application/javascript', css: 'text/css', less: 'text/css', jpeg: 'image/jpeg' };
@@ -18,33 +21,43 @@ const setMimeType = (res, filePath) => {
     if (types[ext]) res.setHeader('Content-Type', types[ext]);
 };
 
-// Dynamic folder selection based on device
+app.use(useragent.express());
+
 app.use((req, res, next) => {
-
     // automate large amount of picture request cuz' faceapi requires to
-    if (req.method === 'GET') {
-        if(req.url.match(/database/)) {
-            app.use(req.url, express.static(path.join(__dirname, 'bin', req.url), { setHeaders: setMimeType}))
-        }
+    if (req.method === "GET" && req.url.startsWith("/database")) {
+        if (!req.headers.referer || !req.headers.referer.includes(req.get('host')))
+            return res.status(403).sendFile(path.join(__dirname, 'bin/website/restricted.html'));
+        return express.static(path.join(__dirname, "bin"), { setHeaders: setMimeType })(req, res, next);
     }
-
-    const folder = req.useragent.isMobile ? 'mobile' : 'application';
-    express.static(path.join(__dirname, 'bin', 'website', folder), { setHeaders: setMimeType })(req, res, next);
+    
+    const folder = req.useragent.isMobile ? "mobile" : "application";
+    express.static(path.join(__dirname, "bin", "website", folder), { setHeaders: setMimeType })(req, res, next);
 });
 
-// Detects if its a Desktop (admin) or Mobile (users)
-app.get('/', (req, res) => {
+app.get("/", (req, res, next) => {
+    const b64auth = (req.headers.authorization || "").split(" ")[1] || "";
+    const [username, password] = Buffer.from(b64auth, "base64").toString().split(":");
+
     const folder = req.useragent.isMobile ? 'mobile' : 'application';
+    const validCredentials =
+        (folder == 'mobile' && username === user.username && password === user.password) ||
+        (folder == 'application' && username === admin.username && password === admin.password);
+
+    if (!validCredentials) {
+        res.set("WWW-Authenticate", 'Basic realm="Login Required"');
+        return res.status(401).sendFile(path.join(__dirname, "bin", "website", "authentication.html"));
+    }
+
     const access = folder == 'mobile' ? 'user' : 'admin';
     console.log(access == 'user' ? "User has connected" : "Admininstrator has connected")
     res.sendFile(path.join(__dirname, 'bin', 'website', folder, `${access}.html`));
 });
 
-['/less.js', '/camera.js', '/face-api.min.js', '/socket.io.js'].forEach(file =>
-    app.use(file, express.static(path.join(
-        __dirname, file.includes('.js') ? (file === '/face-api.min.js' ? 'node_modules/face-api.js/dist/face-api.min.js' : file === '/socket.io.js' ? 'node_modules/socket.io/client-dist/socket.io.js' : `bin${file}`) : ''
-        ), { setHeaders: setMimeType }
-    )));
+app.get("/logout", (req, res) => {
+    res.set("WWW-Authenticate", 'Basic realm="Login Required"');
+    return res.status(401).sendFile(path.join(__dirname, "bin", "website", "authentication.html"));
+});
 
 // Restrict anonymous access to data.js cuz' its an important file and privacy is priority idk
 app.use('/data.js', (req, res) => {
@@ -52,6 +65,15 @@ app.use('/data.js', (req, res) => {
         return res.status(403).sendFile(path.join(__dirname, 'bin/website/restricted.html'));
     res.sendFile(path.join(__dirname, 'bin/database/data.js'), { setHeaders: setMimeType });
 });
+
+['/less.js', '/camera.js', '/face-api.min.js', '/socket.io.js'].forEach(file =>
+    app.use(file, express.static(path.join(
+        __dirname, file.includes('.js') ? (file === '/face-api.min.js' ? 'node_modules/face-api.js/dist/face-api.min.js' : file === '/socket.io.js' ? 'node_modules/socket.io/client-dist/socket.io.js' : `bin${file}`) : ''
+    ), { setHeaders: setMimeType }
+    )));
+
+// Handle 404 requests
+app.use((req, res) => res.status(404).sendFile(path.join(__dirname, "bin", "website", "notFound.html")));
 
 /*
     It receives the video stream from the Desktop's webcam so Mobile users can access them

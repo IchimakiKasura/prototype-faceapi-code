@@ -2,107 +2,160 @@
 <html lang="en">
 
     <head>
-        <!-- Database file -->
-        <script src="data.js"></script>
-        <script src="/socket.io.js"></script>
+        <script>
+            function loadScripts(scripts, callback) {
+                let loaded = 0;
+
+                scripts.forEach(src => {
+                    let script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        loaded++;
+                        if (loaded === scripts.length && typeof callback === 'function') {
+                            callback();
+                        }
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+
+            // List of JS files to load
+            const scriptList = [
+                "12TECHVOC-ICT-DATA.js",
+                "12STEM-D-DATA.js"
+            ];
+
+            loadScripts(scriptList, () => console.log("database is loaded"));
+        </script>
+        <script src="settings.js"></script>
+        <script src="socket.io.js"></script>
+        <script src="serverCom.js"></script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>ADMIN ACCESS</title>
         <link rel="stylesheet/less" type="text/css" href="style.less">
         <script src="less.js"></script>
         <script src="face-api.min.js" defer></script>
-        <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+        <script src="simplepeer.min.js"></script>
         <script src="camera.js" defer></script>
     </head>
 
     <body>
         <div class="webcam">
+            <div class="message">loading</div>
             <video id="cam" autoplay muted></video>
         </div>
         <div class="info">
             <div class="student_info">
-                <img id="studentPicture" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/800px-User_icon_2.svg.png" alt="profile">
+                <img id="studentPicture" src="sampleUser.png" alt="profile">
                 <div class="data_info">
-                    <p>Name: <span id="name_slot">N/A</span></p>
-                    <p>Grade and Section: <span id="grade_section_slot">N/A</span></p>
-                    <p>Student ID: <span id="student_id_slot">N/A</span></p>
-                    <p>Time of Entry: <span id="toe_slot">N/A</span></p>
+                    <p>Name: <span style="font-weight: bold;" id="name_slot">N/A</span></p>
+                    <p>Grade and Section: <span style="font-weight: bold;" id="grade_section_slot">N/A</span></p>
+                    <p>Student ID: <span style="font-weight: bold;" id="student_id_slot">N/A</span></p>
+                    <p>Time of Entry: <span style="font-weight: bold;" id="toe_slot">N/A</span></p>
                 </div>
             </div>
             <div class="misc_placeholder">
                 <div class="studentHistory">
                     <p class="title"> Student History </p>
-                    <div class="scrollList">
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
-                        <div class="student">
-                            <img height="50px" alt="studentPicture" src="../mobile/test.jpg">
-                            <p>STUDENT NAME</p>
-                        </div>
+                    <div class="scrollList" style="display: none">
+                        <!-- dynamically adds itself -->
                     </div>
                 </div>
                 <div class="buttons">
                     <p class="title"> Violations </p>
                     <div class="click">
-                        <div class="btn">FAKE</div>
-                        <div class="btn">UNIFORM</div>
-                        <div class="btn">HAIRCUT</div>
-                        <div class="btn">LATE</div>
+                        <div id="fake"class="btn">FAKE</div>
+                        <div id="uni" class="btn">UNIFORM</div>
+                        <div id="hct" class="btn">HAIRCUT</div>
+                        <div id="lte" class="btn">LATE</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- test -->
+        <!-- Click Events -->
         <script>
-            const cam = document.querySelector("#cam");
+            const uni = document.getElementById("uni").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                boilerplate(target, UNIFORM, 'uni', target.children[1].textContent)
+            });
+            const hct = document.getElementById("hct").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                boilerplate(target, HAIRCUT, 'hct', target.children[1].textContent)
+            });;
+            const lte = document.getElementById("lte").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                boilerplate(target, LATE, 'lte', target.children[1].textContent)
+            });;
+            const fake = document.getElementById("fake").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                target.remove();
+                fakeButton(target.children[1].textContent)
+            });;
 
-            (async()=>{
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevice = devices.filter(device => device.kind === "videoinput");
+            document.addEventListener("DOMContentLoaded", (e)=>{
+                document.querySelector('.scrollList').removeAttribute('style')
+            })
 
-                navigator.mediaDevices.getUserMedia({ video: {
-                    deviceId: {
-                        exact: videoDevice[0].deviceId
+            document.addEventListener("click", (e) => {
+                if (e.target.closest(".student")) {
+                    document.querySelectorAll(".btn").forEach(el => el.classList.remove("ViolationSelected"));
+                    document.querySelectorAll(".student").forEach(el => el.classList.remove("selected"));
+                    e.target.closest(".student").classList.add("selected");
+
+                    let el = document.querySelector('.selected');
+                    let name = el.children[1].textContent
+                    let imgSource = window.studentData[name].pictures[0]
+                    document.querySelector('#name_slot').textContent = name;
+                    document.querySelector('#studentPicture').src = imgSource;
+                    document.querySelector('#grade_section_slot').textContent = window.studentData[name].information['GradeSection'];
+                    document.querySelector('#student_id_slot').textContent = window.studentData[name].information['ID'];
+                    document.querySelector('#toe_slot').textContent = el.getAttribute('time');
+
+                    if(el.getAttribute('uniform') == 'true')
+                    {
+                        document.getElementById("uni").classList.add("ViolationSelected");
                     }
-                }})
-                .then(stream => cam.srcObject = stream)
-                .catch(err => console.error(err));
-            })();
+                    if(el.getAttribute('haircut') == 'true')
+                    {
+                        document.getElementById("hct").classList.add("ViolationSelected");
+                    }
+                    if(el.getAttribute('late') == 'true')
+                    {
+                        document.getElementById("lte").classList.add("ViolationSelected");
+                    }
+                }
+            });
+
+            function boilerplate(e, violation, id, name)
+            {
+                let bool;
+
+                if(e.getAttribute(violation) == 'true')
+                {
+                    document.getElementById(id).classList.remove("ViolationSelected");
+                    e.setAttribute(violation, 'false')
+                    bool = false;
+                } else {
+                    document.getElementById(id).classList.add("ViolationSelected");
+                    e.setAttribute(violation, 'true')
+                    bool = true;
+                }
+
+                setViolation(name, violation, bool)
+            }
+
+
+        </script>
+
+        <script>
+            // I DONT KNOW LMAO WHAT ARE THESE HAHJAJKHAHAHAHA
+            
             window.addEventListener("beforeunload", ()=>{
                 fetch("/logout", { method: "GET" })
             })

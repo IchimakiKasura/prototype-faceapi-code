@@ -1,4 +1,4 @@
 node_modules
-bin/database/users
+bin/database/users/*
 bin/database/data.js
 # credentials.json

@@ -15,7 +15,7 @@ canvas {
     top: 50%;
     width: 580px;
     transform: translateY(-50%);
-    opacity: 0.3;
+    // opacity: 0.3;
     // background-color: rgba(255, 0, 0, 0.5);
     // pointer-events: none;
 }
@@ -54,6 +54,8 @@ canvas {
             background-color: white;
             margin: 0px 0 0 20px;
             height: 229px;
+            width: 229px;
+            object-fit: cover;
             border-radius: 5px;
         }
         
@@ -102,6 +104,9 @@ canvas {
                 .student {
                     img {
                         border-radius: 2px;
+                        height: 100px;
+                        width: 100px;
+                        object-fit: cover;
                     }
     
                     p {
@@ -119,6 +124,12 @@ canvas {
     
                 .student:hover {
                     background-color: rgba(0, 0, 0, 0.9);
+                }
+
+                .student.selected {
+                    border-color: blue;
+                    background-color: lightblue;
+                    color: black;
                 }
             }
 
@@ -143,6 +154,11 @@ canvas {
                     user-select: none;
                 }
 
+                .btn.ViolationSelected {
+                    background-color: red;
+                    color: white;
+                }
+
                 .btn:hover {
                     background-color: rgba(0, 0, 0, 0.9);
                 }
@@ -150,4 +166,18 @@ canvas {
         }
 
     }
+}
+
+.message {
+    display: none;
+    z-index: 1;
+    background-color: black;
+    padding: 30px;
+    font-size: 60px;
+    border-radius: 10px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
 }

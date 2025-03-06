@@ -1,6 +1,5 @@
 const video = document.getElementById('cam');
 const detectionBuffer = new Map();
-const LATE = 'late', UNIFORM = 'uniform', HAIRCUT = 'haircut';
 
 const message = document.querySelector('.message');
 message.style.display = 'block';

@@ -36,7 +36,7 @@
     </head>
     <body>
         <div class="banner">
-            <p>PREVIEW</p>
+            <p id="test">SERVER HAS NOT STARTED YET.</p>
             <img id="ShareCam" src="">
         </div>
         <div class="misc_placeholder">
@@ -56,11 +56,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- rest -->
-        <script>
-
-        </script>
 
         <!-- Click Events -->
         <script>
@@ -171,8 +166,9 @@
             // avoids error as its running on virtual when testing and not on port
             try {
                 const socket = io();
-    
+                
                 socket.on('stream', (imageData) => {
+                    document.getElementById('test').textContent = 'PREVIEW'
                     const blob = new Blob([imageData], { type: 'image/webp' });
                     img.src = URL.createObjectURL(blob);
                 });

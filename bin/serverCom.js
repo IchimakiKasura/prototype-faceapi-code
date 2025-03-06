@@ -31,7 +31,9 @@ function addStudent(name)
         <div class="student selected" time="${new Date().toLocaleString().replace(',', ' @')}" uniform="false" haircut="false" late="false">
             <img height="50px" alt="studentPicture" src="${imgSource}">
             <p style="font-weight: bold;">${name}</p>
-        </div>
+            <p style="font-weight: bold;"> |&nbsp;&nbsp;&nbsp;${window.studentData[name].information.GradeSection}</p>
+            <p style="font-weight: bold;"> |&nbsp;&nbsp;&nbsp;${time.split('@')[1]}</p>
+            </div>
     </div>`;
 
     document.querySelector(".scrollList").insertAdjacentHTML('afterbegin', template);
@@ -55,6 +57,7 @@ async function LoadCurrentHistory()
         Object.keys(attendanceData).forEach(name=>{
 
             const picture = window.studentData[name].pictures[0],
+                section = window.studentData[name].information.GradeSection,
                 haircut = attendanceData[name].violations.haircut,
                 late = attendanceData[name].violations.late,
                 uniform = attendanceData[name].violations.uniform,
@@ -65,6 +68,8 @@ async function LoadCurrentHistory()
                     <div class="student" time="${time}" uniform="${uniform}" haircut="${haircut}" late="${late}">
                         <img height="50px" alt="studentPicture" src="${picture}">
                         <p style="font-weight: bold;">${name}</p>
+                        <p style="font-weight: bold;"> |&nbsp;&nbsp;&nbsp;${section}</p>
+                        <p style="font-weight: bold;"> |&nbsp;&nbsp;&nbsp;${time.split('@')[1]}</p>
                     </div>
                 </div>
             `;

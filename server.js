@@ -39,20 +39,20 @@ app.get("/", (req, res, next) => {
     const [username, password] = Buffer.from(b64auth, "base64").toString().split(":");
 
     const folder = req.useragent.isMobile ? 'mobile' : 'application';
-    const validCredentials =
-        (folder == 'mobile' && username === user.username && password === user.password) ||
-        (folder == 'application' && username === admin.username && password === admin.password);
+    
+    const isValidUser = Array.isArray(user) && user.some(u => u.username === username && u.password === password);
+    const isValidAdmin = username === admin.username && password === admin.password;
+
+    const validCredentials = (folder === 'mobile' && isValidUser) || (folder === 'application' && isValidAdmin);
 
     if (!validCredentials) {
         res.set("WWW-Authenticate", 'Basic realm="Login Required"');
         return res.status(401).sendFile(path.join(__dirname, "bin", "website", "authentication.html"));
     }
 
-    const access = folder == 'mobile' ? 'user' : 'admin';
-    console.log(access == 'user' ? 
-        `User has connected` :
-        `Admininstrator has connected`
-    )
+    const access = folder === 'mobile' ? 'user' : 'admin';
+    console.log(access === 'user' ? `User ${username} has connected` : `Administrator has connected`);
+
     res.sendFile(path.join(__dirname, 'bin', 'website', folder, `${access}.html`));
 });
 

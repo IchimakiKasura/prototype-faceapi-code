@@ -4,6 +4,12 @@
 */
 
 /*
+    constant string idk lmao HAHAHA
+*/
+const LATE = 'late', UNIFORM = 'uniform', HAIRCUT = 'haircut';
+
+
+/*
     The threshold for how strict the faceapi detects
         lower means stricter and high means looser.
 */
@@ -47,3 +53,11 @@ const webcamStreamFPS = 24;
 */
 // const cameraDevice = 0;
 const cameraDevice = true;
+
+/*
+    list all the javascript files from the bin/database directory
+*/
+const scriptList = [
+    "12TECHVOC-ICT-DATA.js",
+    "12STEM-D-DATA.js"
+];

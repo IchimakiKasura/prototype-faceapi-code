@@ -2,6 +2,7 @@
 <html lang="en">
 
     <head>
+        <script src="settings.js"></script>
         <script>
             function loadScripts(scripts, callback) {
                 let loaded = 0;
@@ -19,15 +20,8 @@
                 });
             }
 
-            // List of JS files to load
-            const scriptList = [
-                "12TECHVOC-ICT-DATA.js",
-                "12STEM-D-DATA.js"
-            ];
-
             loadScripts(scriptList, () => console.log("database is loaded"));
         </script>
-        <script src="settings.js"></script>
         <script src="socket.io.js"></script>
         <script src="serverCom.js"></script>
         <meta charset="UTF-8">
@@ -99,38 +93,51 @@
             });;
 
             document.addEventListener("DOMContentLoaded", (e)=>{
+                LoadCurrentHistory()
                 document.querySelector('.scrollList').removeAttribute('style')
             })
 
-            document.addEventListener("click", (e) => {
-                if (e.target.closest(".student")) {
+            document.addEventListener("click", clickEvents);
+
+            function clickEvents(e) {
+
+                /*
+                    I DON'T KNOW WHY IT WONT WORK THAT I NEED TO DUPLICATE THE SAME SHT
+                */
+                try {
+                    if (!e.target.closest(".student")) return;
                     document.querySelectorAll(".btn").forEach(el => el.classList.remove("ViolationSelected"));
                     document.querySelectorAll(".student").forEach(el => el.classList.remove("selected"));
                     e.target.closest(".student").classList.add("selected");
-
-                    let el = document.querySelector('.selected');
-                    let name = el.children[1].textContent
-                    let imgSource = window.studentData[name].pictures[0]
-                    document.querySelector('#name_slot').textContent = name;
-                    document.querySelector('#studentPicture').src = imgSource;
-                    document.querySelector('#grade_section_slot').textContent = window.studentData[name].information['GradeSection'];
-                    document.querySelector('#student_id_slot').textContent = window.studentData[name].information['ID'];
-                    document.querySelector('#toe_slot').textContent = el.getAttribute('time');
-
-                    if(el.getAttribute('uniform') == 'true')
-                    {
-                        document.getElementById("uni").classList.add("ViolationSelected");
-                    }
-                    if(el.getAttribute('haircut') == 'true')
-                    {
-                        document.getElementById("hct").classList.add("ViolationSelected");
-                    }
-                    if(el.getAttribute('late') == 'true')
-                    {
-                        document.getElementById("lte").classList.add("ViolationSelected");
-                    }
+                } catch {
+                    if(e.className != "student") return;
+                    document.querySelectorAll(".btn").forEach(el => el.classList.remove("ViolationSelected"));
+                    document.querySelectorAll(".student").forEach(el => el.classList.remove("selected"));
+                    e.classList.add("selected")
                 }
-            });
+
+                let el = document.querySelector('.selected');
+                let name = el.children[1].textContent
+                let imgSource = window.studentData[name].pictures[0]
+                document.querySelector('#name_slot').textContent = name;
+                document.querySelector('#studentPicture').src = imgSource;
+                document.querySelector('#grade_section_slot').textContent = window.studentData[name].information['GradeSection'];
+                document.querySelector('#student_id_slot').textContent = window.studentData[name].information['ID'];
+                document.querySelector('#toe_slot').textContent = el.getAttribute('time');
+
+                if(el.getAttribute('uniform') == 'true')
+                {
+                    document.getElementById("uni").classList.add("ViolationSelected");
+                }
+                if(el.getAttribute('haircut') == 'true')
+                {
+                    document.getElementById("hct").classList.add("ViolationSelected");
+                }
+                if(el.getAttribute('late') == 'true')
+                {
+                    document.getElementById("lte").classList.add("ViolationSelected");
+                }
+            }
 
             function boilerplate(e, violation, id, name)
             {
@@ -150,12 +157,24 @@
                 setViolation(name, violation, bool)
             }
 
-
+            socket.on('refreshList', async ()=>{
+                const currentSelected = document.querySelector('.selected');
+                let name;
+                if(currentSelected != null)
+                {
+                    name = currentSelected.children[1].textContent
+                }
+                document.querySelector(".scrollList").innerHTML = '';
+                await LoadCurrentHistory();
+                document.querySelectorAll('.student').forEach(students=>{
+                    if(students.children[1].textContent == name)
+                        clickEvents(students)
+                })
+            })
         </script>
 
         <script>
             // I DONT KNOW LMAO WHAT ARE THESE HAHJAJKHAHAHAHA
-            
             window.addEventListener("beforeunload", ()=>{
                 fetch("/logout", { method: "GET" })
             })

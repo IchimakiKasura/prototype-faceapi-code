@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <script src="settings.js"></script>
+        <script>
+            function loadScripts(scripts, callback) {
+                let loaded = 0;
+
+                scripts.forEach(src => {
+                    let script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        loaded++;
+                        if (loaded === scripts.length && typeof callback === 'function') {
+                            callback();
+                        }
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+            
+            loadScripts(scriptList, () => console.log("database is loaded"));
+        </script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>GRANTED ACCESS</title>
@@ -19,36 +39,132 @@
             <p>PREVIEW</p>
             <img id="ShareCam" src="">
         </div>
-        <div class="selection">
-            <div class="list">
-                <p> Student History </p>
-                <div class="scrollList">
-                    <div class="student">
-                        <img height="50px" alt="studentPicture" src="test.jpg">
-                        <p>STUDENT NAME</p>
-                    </div>
-                    <div class="student">
-                        <img height="50px" alt="studentPicture" src="test.jpg">
-                        <p>STUDENT NAME</p>
-                    </div>
-                    <div class="student">
-                        <img height="50px" alt="studentPicture" src="test.jpg">
-                        <p>STUDENT NAME</p>
-                    </div>
-                    <div class="student">
-                        <img height="50px" alt="studentPicture" src="test.jpg">
-                        <p>STUDENT NAME</p>
-                    </div>
-                    <div class="student">
-                        <img height="50px" alt="studentPicture" src="test.jpg">
-                        <p>STUDENT NAME</p>
-                    </div>
+        <div class="misc_placeholder">
+            <div class="studentHistory">
+                <p class="title"> Student History </p>
+                <div class="scrollList" style="display: none">
+                    <!-- dynamically adds itself -->
                 </div>
             </div>
             <div class="buttons">
-                <p> Violations </p>
+                <p class="title"> Violations </p>
+                <div class="click">
+                    <div id="fake"class="btn">FAKE</div>
+                    <div id="uni" class="btn">UNIFORM</div>
+                    <div id="hct" class="btn">HAIRCUT</div>
+                    <div id="lte" class="btn">LATE</div>
+                </div>
             </div>
         </div>
+
+        <!-- rest -->
+        <script>
+
+        </script>
+
+        <!-- Click Events -->
+        <script>
+            const uni = document.getElementById("uni").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                boilerplate(target, UNIFORM, 'uni', target.children[1].textContent)
+            });
+            const hct = document.getElementById("hct").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                boilerplate(target, HAIRCUT, 'hct', target.children[1].textContent)
+            });;
+            const lte = document.getElementById("lte").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                boilerplate(target, LATE, 'lte', target.children[1].textContent)
+            });;
+            const fake = document.getElementById("fake").addEventListener('click', ()=>{
+                const target = document.querySelector('.selected');
+                if(target == null) return;
+                target.remove();
+                fakeButton(target.children[1].textContent)
+            });;
+
+            document.addEventListener("DOMContentLoaded", (e)=>{
+                LoadCurrentHistory()
+                document.querySelector('.scrollList').removeAttribute('style')
+            })
+
+            document.addEventListener("click", (e) => {
+                if (e.target.closest(".student")) {
+                    document.querySelectorAll(".btn").forEach(el => el.classList.remove("ViolationSelected"));
+                    document.querySelectorAll(".student").forEach(el => el.classList.remove("selected"));
+                    e.target.closest(".student").classList.add("selected");
+
+                    let el = document.querySelector('.selected');
+                    if(el.getAttribute('uniform') == 'true')
+                    {
+                        document.getElementById("uni").classList.add("ViolationSelected");
+                    }
+                    if(el.getAttribute('haircut') == 'true')
+                    {
+                        document.getElementById("hct").classList.add("ViolationSelected");
+                    }
+                    if(el.getAttribute('late') == 'true')
+                    {
+                        document.getElementById("lte").classList.add("ViolationSelected");
+                    }
+                }
+            });
+
+            document.addEventListener("click", clickEvents);
+
+            function clickEvents(e) {
+                /*
+                    I DON'T KNOW WHY IT WONT WORK THAT I NEED TO DUPLICATE THE SAME SHT
+                */
+                try {
+                    if (!e.target.closest(".student")) return;
+                    document.querySelectorAll(".btn").forEach(el => el.classList.remove("ViolationSelected"));
+                    document.querySelectorAll(".student").forEach(el => el.classList.remove("selected"));
+                    e.target.closest(".student").classList.add("selected");
+                } catch {
+                    if(e.className != "student") return;
+                    document.querySelectorAll(".btn").forEach(el => el.classList.remove("ViolationSelected"));
+                    document.querySelectorAll(".student").forEach(el => el.classList.remove("selected"));
+                    e.classList.add("selected")
+                }
+
+                let el = document.querySelector('.selected');
+                if(el.getAttribute('uniform') == 'true')
+                {
+                    document.getElementById("uni").classList.add("ViolationSelected");
+                }
+                if(el.getAttribute('haircut') == 'true')
+                {
+                    document.getElementById("hct").classList.add("ViolationSelected");
+                }
+                if(el.getAttribute('late') == 'true')
+                {
+                    document.getElementById("lte").classList.add("ViolationSelected");
+                }
+            }
+
+            function boilerplate(e, violation, id, name)
+            {
+                let bool;
+
+                if(e.getAttribute(violation) == 'true')
+                {
+                    document.getElementById(id).classList.remove("ViolationSelected");
+                    e.setAttribute(violation, 'false')
+                    bool = false;
+                } else {
+                    document.getElementById(id).classList.add("ViolationSelected");
+                    e.setAttribute(violation, 'true')
+                    bool = true;
+                }
+
+                setViolation(name, violation, bool)
+            }
+        </script>
+
         <script defer>
             const img = document.getElementById('ShareCam');
 
@@ -64,6 +180,20 @@
                 img.src = "data:image/webp;base64,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";
             }
 
+            socket.on('refreshList', async ()=>{
+                const currentSelected = document.querySelector('.selected');
+                let name;
+                if(currentSelected != null)
+                {
+                    name = currentSelected.children[1].textContent
+                }
+                document.querySelector(".scrollList").innerHTML = '';
+                await LoadCurrentHistory();
+                document.querySelectorAll('.student').forEach(students=>{
+                    if(students.children[1].textContent == name)
+                        clickEvents(students)
+                })
+            })
         </script>
     </body>
 </html>

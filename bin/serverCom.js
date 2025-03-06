@@ -1,7 +1,5 @@
 const socket = io();
 
-window.addEventListener('load', LoadCurrentHistory);
-
 function fakeButton(name)
 {
     socket.emit('fakeStudent', name);

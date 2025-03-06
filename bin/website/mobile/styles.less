@@ -32,10 +32,24 @@ body {
 
 }
 
-.selection {
+.misc_placeholder {
     color: white;
 
-    .list {
+    .title {
+        text-align: center;
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+
+    .studentHistory, .buttons {
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 5px;
+    }
+
+    .studentHistory {
         overflow: hidden;
         
         p {
@@ -48,7 +62,7 @@ body {
         height: 35vh;
 
         background-color: rgba(0, 0, 0, 0.5);
-    
+
         .scrollList {
             height: 90%;
             overflow: scroll;
@@ -56,6 +70,9 @@ body {
             .student {
                 img {
                     border-radius: 2px;
+                    height: 100px;
+                    width: 100px;
+                    object-fit: cover;
                 }
 
                 p {
@@ -74,20 +91,41 @@ body {
             .student:hover {
                 background-color: rgba(0, 0, 0, 0.9);
             }
+
+            .student.selected {
+                border-color: blue;
+                background-color: lightblue;
+                color: black;
+            }
+        }
+
+        .scrollList::-webkit-scrollbar {
+            display: none;
         }
     }
 
     .buttons {
-        p {
+        padding: 10px;
+        .click {
             text-align: center;
+
+            .btn {
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: 2.5px;
+                padding: 10px;
+                margin: 10px;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .btn.ViolationSelected {
+                background-color: red;
+                color: white;
+            }
+
+            .btn:hover {
+                background-color: rgba(0, 0, 0, 0.9);
+            }
         }
-
-        padding: 5px;
-        margin: 5px;
-        border-radius: 5px;
-        height: 20vh;
-
-        background-color: rgba(0, 0, 0, 0.5);
     }
-
 }

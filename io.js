@@ -29,16 +29,22 @@ module.exports = (server) =>
 
         socket.on('setViolation', ({ name, violation, bool }) => {
             setViolation(name, violation, bool);
-            io.emit()
+            io.emit('refreshList')
         });
         socket.on('detectedFace', (name, section) => {
             const isSuccess = registerStudent(name,section)
-
+            
             if(isSuccess)
+            {
                 io.emit('AddStudent', name)
+                io.emit('refreshList')
+            }
             
         });
-        socket.on('fakeStudent', (name) => { removeStudent(name) });
+        socket.on('fakeStudent', (name) => {
+            removeStudent(name)
+            io.emit('refreshList')
+        });
 
         socket.on('disconnect', () => {
             console.log('Client disconnected:', socket.id);

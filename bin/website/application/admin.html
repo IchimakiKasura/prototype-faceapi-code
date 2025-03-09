@@ -34,10 +34,10 @@
         <script src="camera.js" defer></script>
     </head>
 
-    <body>
+    <body>s
         <div class="webcam">
-            <div class="message">loading</div>
-            <video id="cam" autoplay muted></video>
+            <div class="message">Awaiting video stream</div>
+            <img id="cam">
         </div>
         <div class="info">
             <div class="student_info">
@@ -181,9 +181,9 @@
             window.addEventListener("close", ()=>{
                 fetch("/logout", { method: "GET" })
             })
-            window.addEventListener("unload", ()=>{
-                fetch("/logout", { method: "GET" })
-            })
+            // window.addEventListener("unload", ()=>{
+            //     fetch("/logout", { method: "GET" })
+            // })
             window.addEventListener("pageshow", function (event) {
                 if (event.persisted) {
                     fetch("/logout", { method: "GET" })

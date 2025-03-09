@@ -1,4 +1,5 @@
 const video = document.getElementById('cam');
+let isFirstLoad = true;
 const detectionBuffer = new Map();
 
 const message = document.querySelector('.message');
@@ -13,22 +14,35 @@ Promise.all([
 ]).then(startVideo);
 
 async function startVideo() {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevice = devices.filter(device => device.kind === "videoinput");
-    let webCam;
+    const img = new Image();
+    img.onload = () => video.src = img.src; // Only update when ready
+    
+    socket.on('camera-frame', (base64Data) => {
+        img.src = `data:image/webp;base64,${base64Data}`; // Use WebP format
+    });
 
-    switch (typeof(cameraDevice)) {
-        case 'number':
-            webCam = { deviceId: { exact: videoDevice[cameraDevice].deviceId } };
-            break;
-        case 'boolean':
-            webCam = true;
-            break;
-    }
 
-    navigator.mediaDevices.getUserMedia({ video: webCam })
-        .then(stream => video.srcObject = stream)
-        .catch(err => console.error(err));
+    // For built-in webcam
+
+    // const devices = await navigator.mediaDevices.enumerateDevices();
+    // const videoDevice = devices.filter(device => device.kind === "videoinput");
+    // let webCam;
+
+    // switch (typeof(cameraDevice)) {
+    //     case 'number':
+    //         webCam = { deviceId: { exact: videoDevice[cameraDevice].deviceId } };
+    //         break;
+    //     case 'boolean':
+    //         webCam = true;
+    //         break;
+    // }
+
+    // navigator.mediaDevices.getUserMedia({ video: webCam })
+    //     .then(stream => video.srcObject = stream)
+    //     .catch(err => {
+    //         console.error('No camera found')
+    //         message.textContent = 'No camera device found!'
+    //     });
 }
 
 async function loadLabeledImages() {
@@ -92,89 +106,98 @@ async function processFaceDescriptors() {
 
 socket.on('cacheUpdated', () => console.log("Cache file updated."));
 
-video.addEventListener('play', async () => {
-    const faceTimeNow = Date.now();
-    console.log('loading face data from database');
-    message.textContent = "Loading Face data from Database"
-    const labeledDescriptors = await loadLabeledImages();
-    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, faceThreshold);
-    console.log('face data are loaded');
-    message.textContent = "Face data are loaded"
-    const faceTimeAfter = Date.now();
-    console.log(`face loaded at ${(faceTimeAfter - faceTimeNow) / 1000}s`)
+video.onload = async () => {
+    if(isFirstLoad)
+    {
+        isFirstLoad = false;
 
-    setTimeout(()=>{
-        message.style.display = 'none';
-    }, 500)
+        const faceTimeNow = Date.now();
+        console.log('Loading face data from database...');
+        message.textContent = "Loading Face data from Database";
+        
+        const labeledDescriptors = await loadLabeledImages();
+        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, faceThreshold);
+        
+        console.log('Face data loaded.');
+        message.textContent = "Face data are loaded";
+        
+        const faceTimeAfter = Date.now();
+        console.log(`Face loaded in ${(faceTimeAfter - faceTimeNow) / 1000}s`);
     
-    const canvas = faceapi.createCanvasFromMedia(video);
-    document.body.append(canvas);
-    const displaySize = { width: video.videoWidth, height: video.videoHeight };
-    faceapi.matchDimensions(canvas, displaySize);
-
-    const detectionBuffer = new Map();
-
-    setInterval(async () => {
-        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptors();
-
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-        canvas.getContext('2d', { willReadFrequently: true }).clearRect(0, 0, canvas.width, canvas.height);
-
-        // Track currently detected faces
-        const detectedNames = new Set();
-
-        resizedDetections.forEach(detection => {
-            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-            const name = bestMatch.distance < faceThreshold ? bestMatch.label : "Unknown";
-            detectedNames.add(name);
-
-            if (name !== "Unknown") {
-                const now = Date.now();
-
-                if (!detectionBuffer.has(name)) {
-                    detectionBuffer.set(name, now);
-                } else {
-                    const firstDetectedTime = detectionBuffer.get(name);
-
-                    // Register only if face is continuously detected for 3 seconds
-                    if (now - firstDetectedTime >= faceTimeout) { 
-                        socket.emit('detectedFace', name, window.studentData[name].information.GradeSection);
-                        detectionBuffer.delete(name); // Remove after sending
+        setTimeout(() => {
+            message.style.display = 'none';
+        }, 500);
+    
+        const canvas = faceapi.createCanvasFromMedia(video);
+        document.body.append(canvas);
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+    
+        const detectionBuffer = new Map();
+    
+        async function processFaceDetection() {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+    
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            canvas.getContext('2d', { willReadFrequently: true }).clearRect(0, 0, canvas.width, canvas.height);
+    
+            const detectedNames = new Set();
+    
+            resizedDetections.forEach(detection => {
+                const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                const name = bestMatch.distance < faceThreshold ? bestMatch.label : "Unknown";
+                detectedNames.add(name);
+    
+                if (name !== "Unknown") {
+                    const now = Date.now();
+    
+                    if (!detectionBuffer.has(name)) {
+                        detectionBuffer.set(name, now);
+                    } else {
+                        const firstDetectedTime = detectionBuffer.get(name);
+    
+                        if (now - firstDetectedTime >= faceTimeout) { 
+                            socket.emit('detectedFace', name, window.studentData[name].information.GradeSection);
+                            detectionBuffer.delete(name);
+                        }
                     }
                 }
-            }
-
-            const box = detection.detection.box;
-            new faceapi.draw.DrawBox(box, { label: name }).draw(canvas);
-        });
-
-        // Remove faces from buffer if they are not detected anymore
-        detectionBuffer.forEach((_, name) => {
-            if (!detectedNames.has(name)) {
-                detectionBuffer.delete(name);
-            }
-        });
-
-    }, faceDetectionInterval);
-
-    setInterval(() => {
-        const vidToCanvas = document.createElement('canvas');
-        const ctx = vidToCanvas.getContext('2d');
-        vidToCanvas.width = video.videoWidth;
-        vidToCanvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, vidToCanvas.width, vidToCanvas.height);
     
-        vidToCanvas.toBlob((blob) => {
-            const reader = new FileReader();
-            reader.readAsArrayBuffer(blob);
-            reader.onloadend = () => {
-                socket.emit('frame', reader.result);
-            };
-        }, 'image/webp', 0.8);
-    }, 1000/webcamStreamFPS);   
-});
+                const box = detection.detection.box;
+                new faceapi.draw.DrawBox(box, { label: name }).draw(canvas);
+            });
+    
+            detectionBuffer.forEach((_, name) => {
+                if (!detectedNames.has(name)) {
+                    detectionBuffer.delete(name);
+                }
+            });
+        }
+    
+        function captureFrameAndSend() {
+            const imgToCanvas = document.createElement('canvas');
+            const ctx = imgToCanvas.getContext('2d');
+            imgToCanvas.width = video.width;
+            imgToCanvas.height = video.height;
+            ctx.drawImage(video, 0, 0, imgToCanvas.width, imgToCanvas.height);
+    
+            imgToCanvas.toBlob((blob) => {
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(blob);
+                reader.onloadend = () => {
+                    socket.emit('frame', reader.result);
+                };
+            }, 'image/webp', streamCompression);
+        }
+    
+        setInterval(() => {
+            processFaceDetection();
+            captureFrameAndSend();
+        }, 1000 / webcamStreamFPS);
+    }
+}
 
 socket.on('AddStudent', (name)=>{
     console.log('done');

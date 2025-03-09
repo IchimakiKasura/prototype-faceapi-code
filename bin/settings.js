@@ -13,7 +13,18 @@ const LATE = 'late', UNIFORM = 'uniform', HAIRCUT = 'haircut';
     The threshold for how strict the faceapi detects
         lower means stricter and high means looser.
 */
-const faceThreshold = 0.5
+const faceThreshold = 0.5;
+
+/*
+    Amount of compression level for mobile devices and
+        public.
+    
+    0 = highest compression, might be blocky
+    1 = no compression, original quality
+    
+    (DOES NOT AFFECT THE QUALITY OF THE SERVER MAIN CAMERA)
+*/
+const streamCompression = 0.1;
 
 /*
     Amount of time to take before registering
@@ -39,7 +50,7 @@ const faceDetectionInterval = 100;
     Amount of frames per second to sent on
     mobile users.
 */
-const webcamStreamFPS = 24;
+const webcamStreamFPS = 15;
 
 /*
     This is optional, uncomment or change the boolean
@@ -50,6 +61,8 @@ const webcamStreamFPS = 24;
     
     If you wish to select other webcam, change the number
         to your specified webcam device id.
+
+    Not used when using IP camera
 */
 // const cameraDevice = 0;
 const cameraDevice = true;

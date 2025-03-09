@@ -29,7 +29,6 @@ app.use((req, res, next) => {
         return express.static(path.join(__dirname, "bin"), { setHeaders: setMimeType })(req, res, next);
     }
     
-    
     const folder = req.useragent.isMobile ? "mobile" : "application";
     express.static(path.join(__dirname, "bin", "website", folder), { setHeaders: setMimeType })(req, res, next);
 });
@@ -55,6 +54,10 @@ app.get("/", (req, res, next) => {
 
     res.sendFile(path.join(__dirname, 'bin', 'website', folder, `${access}.html`));
 });
+
+app.get("/public", (req, res) =>{
+    res.sendFile(path.join(__dirname, 'bin/website/guest/guest.html'), { setHeaders: {'Content-Type': 'application/text'} })
+})
 
 app.get("/logout", (req, res) => {
     res.set("WWW-Authenticate", 'Basic realm="Login Required"');

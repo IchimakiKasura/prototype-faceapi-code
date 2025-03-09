@@ -7,3 +7,6 @@ This application is free to use as long as you credit this repo.
 First you need these following requirements:
 - Node JS
 - npm
+
+## PREVIEW
+![image](https://github.com/user-attachments/assets/03933f5c-1cce-444c-a8ca-2445d6a75a79)

@@ -5,7 +5,7 @@ const fs = require('fs');
 
 module.exports = (server) => {
     const io = new Server(server, {
-        maxHttpBufferSize: 1e8
+        maxHttpBufferSize: 5e6
     });
 
     io.on('connection', (socket) => {
@@ -19,8 +19,11 @@ module.exports = (server) => {
             though slight issue here is, it kinda lags when faceapi is processing but who knows
             how tf do I optimize this lobotomized code
         */
-        socket.on('frame', (imageData) => {
-            socket.broadcast.emit('stream', imageData);
+        socket.on('clearFrame', (imageData) => {
+            socket.broadcast.emit('streamFrame', imageData);
+        });
+        socket.on('boxFrame', (imageData) => {
+            socket.broadcast.emit('streamBoxFrame', imageData);
         });
 
         // for face data cache
@@ -36,6 +39,7 @@ module.exports = (server) => {
             setViolation(name, violation, bool);
             io.emit('refreshList')
         });
+
         socket.on('detectedFace', (name, section) => {
             const isSuccess = registerStudent(name, section)
 
@@ -45,9 +49,9 @@ module.exports = (server) => {
                 setTimeout(() => { }, 100)
                 io.emit('refreshList')
             }
-
         });
         socket.on('fakeStudent', (name) => {
+            io.emit('ledActivity', 'removed')
             removeStudent(name)
             io.emit('refreshList')
         });
@@ -57,6 +61,11 @@ module.exports = (server) => {
         });
 
         socket.on('rpi_webcam', (data) => {
+            if (!data) {
+                console.error("Received empty frame");
+                return;
+            }
+            console.log("Received frame:", data.length, "bytes");
             io.emit('camera-frame', data);
         });
     });

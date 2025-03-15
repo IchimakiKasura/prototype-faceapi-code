@@ -10,8 +10,9 @@ const LATE = 'late', UNIFORM = 'uniform', HAIRCUT = 'haircut';
 
 
 /*
-    The threshold for how strict the faceapi detects
-        lower means stricter and high means looser.
+    CONFIDENCE RATE:
+        The threshold for how strict the faceapi detects
+            lower means stricter and higher means looser.
 */
 const faceThreshold = 0.5;
 
@@ -24,7 +25,7 @@ const faceThreshold = 0.5;
     
     (DOES NOT AFFECT THE QUALITY OF THE SERVER MAIN CAMERA)
 */
-const streamCompression = 0.1;
+const streamCompression = 0.2;
 
 /*
     Amount of time to take before registering

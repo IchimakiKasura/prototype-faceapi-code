@@ -167,9 +167,9 @@
             try {
                 const socket = io();
                 
-                socket.on('stream', (imageData) => {
+                socket.on('streamFrame', (imageData) => {
                     document.getElementById('test').textContent = 'PREVIEW'
-                    const blob = new Blob([imageData], { type: 'image/webp' });
+                    const blob = new Blob([imageData.RES], { type: 'image/webp' });
                     img.src = URL.createObjectURL(blob);
                 });
             } catch {

@@ -7,7 +7,13 @@
 body {
     overflow: hidden;
     display: flex;
-    background-color: #99D9EA;
+    background-image: url('./images/info_BG.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position-y: 10%;
+    background-color: rgba(0, 0, 255, 0.6);
+    background-blend-mode: lighten;
+    // background-color: #99D9EA;
 }
 
 canvas {
@@ -76,9 +82,25 @@ canvas {
     }
 
     .misc_placeholder {
+        position:relative;
         display: flex;
         gap: 20px;
         padding: 20px;
+
+        ::before {
+            content: "";
+            background: url('./images/logo.png') no-repeat center center;
+            background-size: contain;
+            position: absolute;
+            top: 50%;
+            left: 35%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            opacity: 0.01;
+            pointer-events: none;
+            z-index: -1;
+        }
 
         .title {
             text-align: center;
@@ -173,11 +195,12 @@ canvas {
     z-index: 1;
     background-color: black;
     padding: 30px;
-    font-size: 60px;
+    font-size: 40px;
     border-radius: 10px;
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     color: white;
+    text-align: center;
 }

@@ -1,0 +1,7 @@
+{
+    "ignore": [
+        "bin/database/cache/faces.bin",
+        "bin/database/attendance/*"
+    ],
+    "ext": "js,json,bin"
+}

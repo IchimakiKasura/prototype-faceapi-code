@@ -23,32 +23,13 @@ Object.assign(window.studentData,
                 "../../database/users/12ICT/pepito/5.jpg",
                 "../../database/users/12ICT/pepito/6.jpg",
                 "../../database/users/12ICT/pepito/7.jpg",
-                "../../database/users/12ICT/pepito/8.jpg"
+                "../../database/users/12ICT/pepito/8.jpg",
+                "../../database/users/12ICT/pepito/9.jpg"
             ],
             "information": {
                 "GradeSection": "12 - TECHVOC-ICT",
                 "ID": "2019-000479"
             },
-        },
-        "Lira Cassandra Gabriz": {
-            "pictures": [
-                "../../database/users/12ICT/gabriz/1.jpg",
-                "../../database/users/12ICT/gabriz/2.jpg"
-            ],
-            "information": {
-                "GradeSection": "12 - TECHVOC-ICT",
-                "ID": ""
-            }
-        },
-        "Rich Moy Ventura": {
-            "pictures": [
-                "../../database/users/12ICT/rich/1.jpg",
-                "../../database/users/12ICT/rich/2.jpg"
-            ],
-            "information": {
-                "GradeSection": "12 - TECHVOC-ICT",
-                "ID": ""
-            }
         },
         "Raven Z. Cinco": {
             "pictures": [

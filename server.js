@@ -1,10 +1,11 @@
 const useragent = require('express-useragent');
+const favicon = require('serve-favicon');
 const express = require('express');
 const setIo = require('./io');
 const http = require('http');
 const path = require('path');
-const os = require('os')
-const fs = require('fs')
+const os = require('os');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -21,6 +22,8 @@ const setMimeType = (res, filePath) => {
 };
 
 app.use(useragent.express());
+
+app.use(favicon(path.join(__dirname, 'bin/website/favicon.ico')))
 
 app.use((req, res, next) => {
     // automate large amount of picture request cuz' faceapi requires to
@@ -99,6 +102,7 @@ restrictedFiles.forEach(file=>
 const files = [
     '/less.js',
     '/camera.js',
+    '/faceTrainer.js',
     '/settings.js',
     '/face-api.min.js',
     '/socket.io.js',

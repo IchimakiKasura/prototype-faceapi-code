@@ -61,11 +61,6 @@ module.exports = (server) => {
         });
 
         socket.on('rpi_webcam', (data) => {
-            if (!data) {
-                console.error("Received empty frame");
-                return;
-            }
-            console.log("Received frame:", data.length, "bytes");
             io.emit('camera-frame', data);
         });
     });

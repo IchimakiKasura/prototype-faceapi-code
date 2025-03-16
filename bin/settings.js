@@ -63,10 +63,13 @@ const webcamStreamFPS = 15;
     If you wish to select other webcam, change the number
         to your specified webcam device id.
 
-    Not used when using IP camera
+    If using IP Camera, please disable "useWebcam"
+
+    only resort to this if sht went downhill on IP cam lmao
 */
 // const cameraDevice = 0;
 const cameraDevice = true;
+const useWebcam = true; // set to false if using IP webcam
 
 /*
     list all the javascript files from the bin/database directory

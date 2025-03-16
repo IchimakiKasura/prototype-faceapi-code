@@ -8,6 +8,7 @@ const sharp = require('sharp');
 const Gpio = pigpio.Gpio;
 const greenLed = new Gpio(23, { mode: Gpio.OUTPUT }); // Green LED (Power Indicator)
 const redLed = new Gpio(24, { mode: Gpio.OUTPUT });   // Red LED (Status Indicator)
+const buzzer = new Gpio(14, { mode: Gpio.OUTPUT });   // Buzzing
 
 // Adjustable settings
 const fps = '15';
@@ -20,9 +21,15 @@ const cameraArgs = [
     '--codec', 'mjpeg', '--inline', '--nopreview', '-o', '-', '-v', '0',
     '--vflip', '1', '--denoise', 'cdn_fast',
     '--awbgains', '1.2,1.0', '--contrast', '1.0', '--brightness', '0.1',
-    '--denoise', 'cdn_off', '--shutter', '60000', '--gain', '2',
+    '--shutter', '60000', '--gain', '2',
     '--awb', whitebalance
 ];
+
+async function Beep(delay) {
+    buzzer.digitalWrite(1);
+    await new Promise(r => setTimeout(r, delay));
+    buzzer.digitalWrite(0)
+}
 
 async function findWebcam() {
     console.log("Searching for webcam on the network...");
@@ -63,9 +70,11 @@ async function blinkBoth(times, delay) {
     for (let i = 0; i < times; i++) {
         greenLed.digitalWrite(1);
         redLed.digitalWrite(1);
+        buzzer.digitalWrite(1);
         await new Promise(r => setTimeout(r, delay));
         greenLed.digitalWrite(0);
         redLed.digitalWrite(0);
+        buzzer.digitalWrite(0);
         await new Promise(r => setTimeout(r, delay));
     }
 }
@@ -95,6 +104,7 @@ async function blinkWhileSearching(delay, stopSignal) {
             greenLed.digitalWrite(green);
             await new Promise(r => setTimeout(r, wait));
         }
+        Beep(50)
     }
 }
 
@@ -123,78 +133,92 @@ async function main() {
     await searchPromise;
     await blinkPromise;
     greenLed.digitalWrite('1');
+    Beep(1000)
 }
 
 function startStreaming(ip) {
+    let isConnected = false;
+    let frameBuffer = Buffer.alloc(0);
     const SERVER_IP = `http://${ip}:8080`;
     const socket = io(SERVER_IP, { maxHttpBufferSize: 5e6 });
-
-    let connectingBlink = setInterval(() => {
+    
+    let connectingBlink = setInterval(async () => {
         redLed.digitalWrite(redLed.digitalRead() ^ 1);
     }, 250);
-
+    
     let videoProcess;
 
     function startVideoProcess() {
+        if(!isConnected) return;
         console.log('Starting up Video Process')
         if (videoProcess) videoProcess.kill();
-        videoProcess = spawn('sudo', ['rpicam-vid', ...cameraArgs]);
+
+        const command = 'sudo';
+        const args = ['su', '-', '-c', `libcamera-vid ${cameraArgs.join(' ')}`];
+
+        console.log(`Executing command: ${command} ${args.join(' ')}`);
+
+        videoProcess = spawn(command, args);
+
         console.log('video process spawned')
 
-        let frameBuffer = Buffer.alloc(0);
 
-        videoProcess.stdout.on('data', async (data) => {
-            console.log('data sent')
+        videoProcess.stdout.on('data', (data) => {
             frameBuffer = Buffer.concat([frameBuffer, data]);
         
             let frameEnd;
             while ((frameEnd = frameBuffer.indexOf(Buffer.from([0xFF, 0xD9]))) !== -1) {
-                const frame = frameBuffer.slice(0, frameEnd + 2);
-                frameBuffer = frameBuffer.slice(frameEnd + 2); // Remove processed frame
-        
-                try {
-                    const compressed = await sharp(frame)
-                        .webp({ quality: 75 }) // Optimize MJPEG without resizing
-                        .toBuffer();
-        
-                    socket.emit('rpi_webcam', compressed.toString('base64'));
-                } catch (err) {
-                    console.error('WebP Compression Error:', err);
-                }
+                const frame = frameBuffer.subarray(0, frameEnd + 2);
+                socket.volatile.emit('rpi_webcam', frame.toString('base64')); // Use `volatile` to drop old frames
+                frameBuffer = frameBuffer.subarray(frameEnd + 2);
             }
         });
 
         videoProcess.stderr.on('data', (data) => {
             console.error(`libcamera-vid error: ${data}`);
+            buzzer.digitalWrite(0);
         });
 
         videoProcess.on('close', (code) => {
-            console.log(`libcamera-vid exited with code ${code}, restarting...`);
-            setTimeout(startVideoProcess, 5000); // Restart after 1 second
-        });
+            connectingBlink = setInterval(() => {
+                redLed.digitalWrite(redLed.digitalRead() ^ 1);
+            }, 250);
+            console.log(`libcamera-vid exited with code ${code}, restarting`);
+            // setTimeout(startVideoProcess, 5000); // Restart after 5 second
+            buzzer.digitalWrite(0);
+         });
     }
 
-    socket.on('connect', () => {
+    socket.on('connect', async () => {
+        isConnected = true;
+        await Beep(10)
+        await Beep(10)
+        await Beep(500)
         console.log('Connected to server:', SERVER_IP);
+        frameBuffer = Buffer.alloc(0); // Flush old data on reconnect
         clearInterval(connectingBlink);
-        redLed.digitalWrite(0);
         startVideoProcess(); // Start the video process
+        redLed.digitalWrite(0);
+        buzzer.digitalWrite(0);
     });
 
     socket.on('disconnect', () => {
+        isConnected = false;
         console.log('Disconnected from server');
         connectingBlink = setInterval(() => {
             redLed.digitalWrite(redLed.digitalRead() ^ 1);
         }, 250);
+        buzzer.digitalWrite(0);
     });
 
-    socket.on('ledActivity', data => {
+    socket.on('ledActivity',async data => {
         console.log(`LED ACTIVITY: "${data}"`)
         switch (data) {
             case 'add':
                 console.log('STUDENT ADDED');
                 redLed.digitalWrite(1);
-                setTimeout(() => redLed.digitalWrite(0), 450);
+                setTsimeout(() => redLed.digitalWrite(0), 450);
+                await Beep(450);
                 break;
             case 'violation':
                 console.log('STUDENT VIOLATED');

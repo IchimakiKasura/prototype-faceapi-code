@@ -13,22 +13,42 @@ Promise.all([
 ]).then(startVideo);
 
 async function startVideo() {
-    const img = new Image();
-    img.onload = () => {
-        requestAnimationFrame(() => video.src = img.src);
-    };
+    if(useWebcam)
+    {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevice = devices.filter(device => device.kind === "videoinput");
+
+        navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: videoDevice[0].deviceId } } })
+        .then(stream => {
+          const vid = document.getElementById('webcams'); // Video element
+          const img = document.getElementById('cam');  // Image element
+          vid.srcObject = stream;
     
-    // let totalBytes = 0;
-    // setInterval(() => {
-    //     const bitrate = (totalBytes * 8) / 1024;
-    //     console.log(`Current Bitrate: ${bitrate.toFixed(2)} kbps`);
-    //     totalBytes = 0; // Reset every second
-    // }, 1000);
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
     
-    socket.on('camera-frame', (base64Data) => {
-        img.src = `data:image/webp;base64,${base64Data}`;
-        // totalBytes += atob(base64Data).length;
-    });
+          vid.addEventListener('playing', () => {
+            setInterval(() => {
+              if (vid.videoWidth > 0 && vid.videoHeight > 0) {
+                canvas.width = vid.videoWidth;
+                canvas.height = vid.videoHeight;
+                ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+                img.src = canvas.toDataURL('image/webp'); // Optimized encoding
+              }
+            }, 16); // 24 FPS (1000ms / 24 = ~42ms per frame)
+          });
+        })
+        .catch(error => console.error('Webcam access error:', error));
+    } else {
+        const img = new Image();
+        img.onload = () => {
+            requestAnimationFrame(() => video.src = img.src);
+        };
+        
+        socket.on('camera-frame', (base64Data) => {
+            img.src = `data:image/webp;base64,${base64Data}`;
+        });
+    }
 }
 
 socket.on('cacheUpdated', () => console.log("Cache file updated."));

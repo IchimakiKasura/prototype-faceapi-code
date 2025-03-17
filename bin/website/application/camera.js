@@ -45,9 +45,21 @@ async function startVideo() {
             requestAnimationFrame(() => video.src = img.src);
         };
         
+        let lastFrameTime = Date.now();
+        const timeoutThreshold = 5000;
+        
         socket.on('camera-frame', (base64Data) => {
             img.src = `data:image/webp;base64,${base64Data}`;
+            lastFrameTime = Date.now();
         });
+        
+        setInterval(() => {
+            if (Date.now() - lastFrameTime > timeoutThreshold) {
+                message.textContent = "reconnecting"
+                message.style.display = 'block';
+                img.src = "";
+            } else message.style.display = 'none';
+        }, 1000);
     }
 }
 

@@ -3,7 +3,6 @@
 const io = require('socket.io-client');
 const { spawn, exec } = require('child_process');
 const pigpio = require('pigpio');
-const sharp = require('sharp');
 
 const Gpio = pigpio.Gpio;
 const greenLed = new Gpio(23, { mode: Gpio.OUTPUT }); // Green LED (Power Indicator)
@@ -12,16 +11,17 @@ const buzzer = new Gpio(14, { mode: Gpio.OUTPUT });   // Buzzing
 
 // Adjustable settings
 const fps = '15';
-let whitebalance = 'custom';
-const width = '1024';
-const height = '768';
+let whitebalance = 'auto';
+const width = '640'; // default 1024
+const height = '480'; // default 768
 
 const cameraArgs = [
     '--width', width, '--height', height, '--framerate', fps, '-t', '0',
     '--codec', 'mjpeg', '--inline', '--nopreview', '-o', '-', '-v', '0',
     '--vflip', '1', '--denoise', 'cdn_fast',
-    '--awbgains', '1.2,1.0', '--contrast', '1.0', '--brightness', '0.1',
-    '--shutter', '60000', '--gain', '2',
+    
+    // '--awbgains', '1.2,1.0', '--contrast', '1.0', '--brightness', '0.1',
+    // '--shutter', '60000', '--gain', '2',
     '--awb', whitebalance
 ];
 
@@ -99,6 +99,7 @@ async function blinkWhileSearching(delay, stopSignal) {
     ];
 
     while (!stopSignal.done) {
+        Beep(50)
         for (const [red, green, wait] of steps) {
             redLed.digitalWrite(red);
             greenLed.digitalWrite(green);
@@ -140,7 +141,7 @@ function startStreaming(ip) {
     let isConnected = false;
     let frameBuffer = Buffer.alloc(0);
     const SERVER_IP = `http://${ip}:8080`;
-    const socket = io(SERVER_IP, { maxHttpBufferSize: 5e6 });
+    const socket = io(SERVER_IP, { maxHttpBufferSize: 2e6 });
     
     let connectingBlink = setInterval(async () => {
         redLed.digitalWrite(redLed.digitalRead() ^ 1);
@@ -162,15 +163,17 @@ function startStreaming(ip) {
 
         console.log('video process spawned')
 
-
         videoProcess.stdout.on('data', (data) => {
             frameBuffer = Buffer.concat([frameBuffer, data]);
-        
+            
             let frameEnd;
             while ((frameEnd = frameBuffer.indexOf(Buffer.from([0xFF, 0xD9]))) !== -1) {
                 const frame = frameBuffer.subarray(0, frameEnd + 2);
-                socket.volatile.emit('rpi_webcam', frame.toString('base64')); // Use `volatile` to drop old frames
+                socket.volatile.emit('rpi_webcam', frame.toString('base64')); // Drop old frames
+        
+                // Reset buffer to avoid buildup
                 frameBuffer = frameBuffer.subarray(frameEnd + 2);
+                if (frameBuffer.length > 100000) frameBuffer = Buffer.alloc(0); // Clear if too large
             }
         });
 
@@ -180,9 +183,6 @@ function startStreaming(ip) {
         });
 
         videoProcess.on('close', (code) => {
-            connectingBlink = setInterval(() => {
-                redLed.digitalWrite(redLed.digitalRead() ^ 1);
-            }, 250);
             console.log(`libcamera-vid exited with code ${code}, restarting`);
             // setTimeout(startVideoProcess, 5000); // Restart after 5 second
             buzzer.digitalWrite(0);
@@ -191,8 +191,8 @@ function startStreaming(ip) {
 
     socket.on('connect', async () => {
         isConnected = true;
-        await Beep(10)
-        await Beep(10)
+        await Beep(100)
+        await Beep(100)
         await Beep(500)
         console.log('Connected to server:', SERVER_IP);
         frameBuffer = Buffer.alloc(0); // Flush old data on reconnect
@@ -217,7 +217,7 @@ function startStreaming(ip) {
             case 'add':
                 console.log('STUDENT ADDED');
                 redLed.digitalWrite(1);
-                setTsimeout(() => redLed.digitalWrite(0), 450);
+                setTimeout(() => redLed.digitalWrite(0), 450);
                 await Beep(450);
                 break;
             case 'violation':

@@ -69,7 +69,7 @@ const webcamStreamFPS = 15;
 */
 // const cameraDevice = 0;
 const cameraDevice = true;
-const useWebcam = true; // set to false if using IP webcam
+const useWebcam = false; // set to false if using IP webcam
 
 /*
     list all the javascript files from the bin/database directory

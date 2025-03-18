@@ -73,7 +73,7 @@
             
             <!-- Bottom Log -->
             <div id="log">
-                STUDENT:
+                STUDENT: <span id="studentLog"></span>
             </div>
         
             <!-- Top-Left Log -->
@@ -84,7 +84,7 @@
         <script defer>
             const img = document.getElementById('ShareCam');
             const d = document.getElementById('bli');
-            const currentName = document.getElementById('log');
+            const currentName = document.getElementById('studentLog');
             const nameLog = document.getElementById('logTopLeft');
 
             let nameList = [];
@@ -103,7 +103,7 @@
             try {
                 const socket = io();
                 
-                socket.on('streamBoxFrame', (imageData) => {
+                socket.on('boxFrame', (imageData) => {
                     const blob = new Blob([imageData], { type: 'image/webp' });
                     img.src = URL.createObjectURL(blob);
                 });

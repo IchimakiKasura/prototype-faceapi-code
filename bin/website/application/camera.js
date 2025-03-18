@@ -23,10 +23,10 @@ async function startVideo() {
           const vid = document.getElementById('webcams'); // Video element
           const img = document.getElementById('cam');  // Image element
           vid.srcObject = stream;
-    
+
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-    
+
           vid.addEventListener('playing', () => {
             setInterval(() => {
               if (vid.videoWidth > 0 && vid.videoHeight > 0) {
@@ -44,7 +44,7 @@ async function startVideo() {
         img.onload = () => {
             requestAnimationFrame(() => video.src = img.src);
         };
-        
+
         let lastFrameTime = Date.now();
         const timeoutThreshold = 5000;
         
@@ -52,7 +52,7 @@ async function startVideo() {
             img.src = `data:image/webp;base64,${base64Data}`;
             lastFrameTime = Date.now();
         });
-        
+
         setInterval(() => {
             if (Date.now() - lastFrameTime > timeoutThreshold) {
                 message.textContent = "reconnecting"
@@ -92,16 +92,16 @@ video.onload = async () => {
             const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
                 .withFaceLandmarks()
                 .withFaceDescriptors();
-        
+
             const resizedDetections = faceapi.resizeResults(detections, { width: video.width, height: video.height });
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
             const detectedNames = new Set();
             const now = Date.now();
             const resetTime = 500;  // Increased reset time for smoother tracking
             const cooldownTime = 5000;
-        
+
             resizedDetections.forEach(detection => {
                 const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
                 const isKnown = bestMatch.distance < faceThreshold;
@@ -112,7 +112,7 @@ video.onload = async () => {
                     label: `${name} (${bestMatch.distance.toFixed(2)})`, 
                     boxColor: isKnown ? "green" : "red"
                 }).draw(canvas);
-        
+
                 if (isKnown) {
                     if (!detectionBuffer.has(name)) {
                         detectionBuffer.set(name, { firstSeen: now, lastSeen: now, lastRegistered: 0 });
@@ -135,7 +135,7 @@ video.onload = async () => {
                     }
                 }
             });
-        
+
             // Remove faces that disappeared only if they have been gone too long
             detectionBuffer.forEach((data, name) => {
                 if (!detectedNames.has(name) && now - data.lastSeen > resetTime) {
@@ -143,7 +143,7 @@ video.onload = async () => {
                 }
             });
         }
-        
+
         function sendImages()
         {
             // Clear Preview
@@ -152,7 +152,7 @@ video.onload = async () => {
                 const reader = new FileReader();
                 reader.readAsArrayBuffer(blob);
                 reader.onloadend = () => {
-                    socket.emit('clearFrame', reader.result);
+                    socket.volatile.emit('clearFrame', reader.result);
                 };
             }, 'image/webp', streamCompression);
 
@@ -169,12 +169,12 @@ video.onload = async () => {
                 const reader = new FileReader();
                 reader.readAsArrayBuffer(blob);
                 reader.onloadend = () => {
-                    socket.emit('boxFrame', reader.result);
+                    socket.volatile.emit('boxFrame', reader.result);
                 };
             }, 'image/webp', streamCompression);
         }
 
-        setInterval(processFaceDetection, 50);
+        setInterval(processFaceDetection, faceDetectionInterval);
         setInterval(sendImages, 1000 / webcamStreamFPS);
     }
 };

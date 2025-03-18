@@ -25,7 +25,7 @@ const faceThreshold = 0.5;
     
     (DOES NOT AFFECT THE QUALITY OF THE SERVER MAIN CAMERA)
 */
-const streamCompression = 0.2;
+const streamCompression = 0.4;
 
 /*
     Amount of time to take before registering

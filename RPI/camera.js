@@ -3,14 +3,13 @@ const { spawn } = require('child_process');
 const { Beep } = require('./led');
 const { redLed, buzzer } = require('./led');
 
-const fps = '15';
-const width = '640';
-const height = '480';
+const fps = '24';
+const width = '800';
+const height = '600';
 const cameraArgs = [
     '--width', width, '--height', height, '--framerate', fps, '-t', '0',
     '--codec', 'mjpeg', '--inline', '--nopreview', '-o', '-', '-v', '0',
-    '--vflip', '1', '--denoise', 'cdn_fast',
-    '--awb', 'auto'
+    '--vflip', '1', '--denoise', 'cdn_fast'
 ];
 
 function startStreaming(ip) {
@@ -31,8 +30,8 @@ function startStreaming(ip) {
         if (videoProcess) videoProcess.kill();
 
         const command = 'sudo';
-        // const args = ['su', '-', '-c', `libcamera-vid ${cameraArgs.join(' ')}`];
-        const args = [`libcamera-vid ${cameraArgs.join(' ')}`];
+        const args = ['su', '-', '-c', `libcamera-vid ${cameraArgs.join(' ')}`];
+        //const args = [`libcamera-vid ${cameraArgs.join(' ')}`];
 
         console.log(`Executing command: ${command} ${args.join(' ')}`);
 

@@ -1,7 +1,7 @@
-<center>
+<div align='center'>
 <img src="./bin/website/FIST CIRCLE.png" height="120px">
 <h1>Facial Integrated System Technology</h1>
-</center>
+</div>
 <br>
 
 # SCHOOL DATABASE APPLICATION w/ FACIAL RECOGNITION

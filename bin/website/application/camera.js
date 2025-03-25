@@ -6,7 +6,7 @@ const message = document.querySelector('.message');
 message.style.display = 'block';
 
 Promise.all([
-    // faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+    faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
     faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
     faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
     faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
@@ -89,7 +89,11 @@ video.onload = async () => {
         const imgCtx = imgToCanvas.getContext('2d');
 
         async function processFaceDetection() {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+            // const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+            //     .withFaceLandmarks()
+            //     .withFaceDescriptors();
+
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
                 .withFaceLandmarks()
                 .withFaceDescriptors();
 

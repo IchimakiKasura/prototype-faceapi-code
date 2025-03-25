@@ -103,7 +103,7 @@
             try {
                 const socket = io();
                 
-                socket.on('boxFrame', (imageData) => {
+                socket.on('streamBoxFrame', (imageData) => {
                     const blob = new Blob([imageData], { type: 'image/webp' });
                     img.src = URL.createObjectURL(blob);
                 });

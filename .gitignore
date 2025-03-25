@@ -1,6 +1,8 @@
 node_modules
 bin/database/users/*
 bin/database/data.js
-bin/database/attendance/*.json
+bin/database/attendance/*.xlsx
 bin/database/cache/faces.bin
+bin/database/12STEM-D-DATA.js
+bin/database/12TECHVOC-ICT-DATA.js
 # credentials.json

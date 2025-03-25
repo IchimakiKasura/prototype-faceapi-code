@@ -4,6 +4,7 @@ const express = require('express');
 const setIo = require('./io');
 const http = require('http');
 const path = require('path');
+const XLSX = require('xlsx');
 const os = require('os');
 const fs = require('fs');
 
@@ -67,14 +68,33 @@ app.get("/logout", (req, res) => {
     return res.status(401).sendFile(path.join(__dirname, "bin", "website", "authentication.html"));
 });
 
-app.get(`/:js.json`, (req, res, next) => {
-    restricted(req, res);
+app.get('/:date.xlsx', (req, res) => {
+    const date = req.params.date;
+    const filePath = path.join(__dirname, 'bin/database/attendance', `${date}.xlsx`);
 
-    const currentDate = new Date().toLocaleDateString().replaceAll('/','-');
-    const filePath = path.join(__dirname, `bin/database/attendance/${currentDate}.json`);
-    res.sendFile(filePath, { setHeaders: setMimeType }, (err) => {
-        if (err) res.status(404).json({ error: "Attendance file not found" });
-    });
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: 'No attendance record found' });
+    }
+
+    const workbook = XLSX.readFile(filePath);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = XLSX.utils.sheet_to_json(sheet, { raw: false }).reverse(); // Reverse order here
+
+    // Convert array format to object format
+    const attendanceData = jsonData.reduce((acc, row) => {
+        acc[row.NAME] = {
+            gradeSection: row.SECTION,
+            time: row.TIME || "Unknown Time",
+            violations: {
+                uniform: row.VIOLATIONS.includes("uniform"),
+                late: row.VIOLATIONS.includes("late"),
+                haircut: row.VIOLATIONS.includes("haircut")
+            }
+        };
+        return acc;
+    }, {});
+
+    res.json(attendanceData);
 });
 
 app.get('/faces.bin', (req, res, next) => {

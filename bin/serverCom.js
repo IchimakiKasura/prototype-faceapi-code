@@ -33,32 +33,34 @@ function addStudent(name)
 }
 
 // If the page was reset
-async function LoadCurrentHistory()
-{
+async function LoadCurrentHistory() {
     try {
         const currentDate = new Date().toLocaleDateString().replaceAll('/','-');
-        const res = await fetch(`/${currentDate}.json`)
+        const res = await fetch(`/${currentDate}.xlsx`);
         
-        if(res.status == 404)
-            return console.warn('NEW DAY DETECTED: Attendance for today will created automatically.')
+        if (res.status == 404) {
+            return console.warn('NEW DAY DETECTED: Attendance for today will be created automatically.');
+        }
 
         const attendanceData = await res.json();
-
         const historyContainer = document.querySelector(".scrollList");
 
-        Object.keys(attendanceData).forEach(name=>{
+        Object.keys(attendanceData).forEach(name => {
+            const picture = window.studentData[name]?.pictures[0] || "default.jpg";
+            const { time, violations } = attendanceData[name];
 
-            const picture = window.studentData[name].pictures[0],
-                haircut = attendanceData[name].violations.haircut,
-                late = attendanceData[name].violations.late,
-                uniform = attendanceData[name].violations.uniform,
-                time = attendanceData[name].time;
-
-            historyContainer.innerHTML += template(name, time, picture, uniform, haircut, late);
+            historyContainer.innerHTML += template(
+                name, 
+                time,  // Now displays the correct recorded time
+                picture, 
+                violations.uniform, 
+                violations.haircut, 
+                violations.late
+            );
         });
 
     } catch (error) {
-        console.log('No history yet')
+        console.log('No history yet');
     }
 }
 
